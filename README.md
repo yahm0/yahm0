@@ -6,7 +6,7 @@
 
 💞️ I’m looking to collaborate on innovative cloud solutions, data center optimization projects, and open-source IT tools.
 
-📫 How to reach me: LinkedIn or email me at stnt190@gmail.com
+📫 How to reach me: LinkedIn or email me at stnt190@outlook.com
 
 <!---
 yahm0/yahm0 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
