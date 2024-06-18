@@ -1,4 +1,3 @@
-
 👋 Hi, I’m @yahm0 (Adam Nuccio)
 👀 I’m interested in IT leadership, cloud computing, and Software Development.
 🌱 I’m currently learning advanced machine learning techniques and Kubernetes.
