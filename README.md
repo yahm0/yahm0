@@ -6,7 +6,7 @@
 
 💞️ I’m looking to collaborate on innovative cloud solutions, data center optimization projects, open-source IT tools, and video game development.
 
-📫 How to reach me: LinkedIn or email me at anuccio@greenpipeanalytics.com
+📫 How to reach me: LinkedIn: https://www.linkedin.com/in/adam-nuccio/ or email me at anuccio@greenpipeanalytics.com
 
 <!---
 yahm0/yahm0 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
