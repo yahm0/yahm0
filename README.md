@@ -1,4 +1,4 @@
-👋 Hi, I’m @yahm0 (Adam Nuccio)
+👋 Hello, I’m Adam Nuccio
 
 👀 I’m interested in IT leadership, cloud computing, and Software Development.
 
