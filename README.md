@@ -4,7 +4,7 @@
 
 🌱 I’m currently learning advanced machine learning techniques and polishing up my web developement skills.
 
-💞️ I’m looking to collaborate on innovative cloud solutions, data center optimization projects, open-source IT tools, and video game development.
+💞️ I’m looking to collaborate on innovative cloud solutions, data center optimization projects, open-source IT tools, web applications, and video game development.
 
 📫 How to reach me: LinkedIn: https://www.linkedin.com/in/adam-nuccio/ or email me at anuccio@greenpipeanalytics.com
 
