@@ -1,14 +1,29 @@
-👋 Hello, I’m Adam Nuccio
+# 👋 Hello, I’m Adam Nuccio
 
-👀 I’m interested in IT leadership, cloud computing, and Software Development.
+I’m interested in **IT leadership, cloud computing, and software development**.
 
-🌱 I’m currently learning advanced machine learning techniques and polishing up my web developement skills.
+I’m currently learning **advanced machine learning techniques** and continuing to improve my **web development** skills.
 
-💞️ I’m looking to collaborate on innovative cloud infrastructure solutions, machine learning engineering projects, data center optimization, open-source tooling, web applications, and video game development.
+I’m looking to collaborate on:
 
-📫 How to reach me: LinkedIn: https://www.linkedin.com/in/adam-nuccio/ or email me at adam@adamnuccio.com
+* Cloud infrastructure solutions
+* Machine learning engineering projects
+* Data center optimization
+* Open-source tooling
+* Web applications
+* Video game development
+
+## 📊 GitHub Language Stats
+
+![Language Stats](./stats/leaderboard_by_weighted.png)
+
+![Language Bar Chart](./stats/bar_by_weighted.png)
+
+## 📫 Contact
+
+* LinkedIn: [linkedin.com/in/adam-nuccio](https://www.linkedin.com/in/adam-nuccio/)
+* Email: [adam@adamnuccio.com](mailto:adam@adamnuccio.com)
 
 <!---
-yahm0/yahm0 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
+yahm0/yahm0 is a special repository because its README.md appears on your GitHub profile.
 --->
