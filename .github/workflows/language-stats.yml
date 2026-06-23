@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout profile repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: GitHub Profile Language Analytics
         uses: StefVuck/Github-Language-Stats@v1.2.0
