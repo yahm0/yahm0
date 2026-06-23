@@ -58,5 +58,5 @@
         <rect x="180" y="516" width="8" height="26" rx="5" class="bar"/>
         <text x="200" y="535" class="value">743 lines · 0.4%</text>
         
-      <text x="30" y="585" class="meta">Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.</text>
+      <text x="30" y="585" class="meta"></text>
     </svg>

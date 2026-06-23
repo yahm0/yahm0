@@ -58,5 +58,5 @@
         <rect x="180" y="516" width="45" height="26" rx="5" class="bar"/>
         <text x="237" y="535" class="value">2 repos · 2.3%</text>
         
-      <text x="30" y="585" class="meta">Metric: number of included repositories where each language appears.</text>
+      <text x="30" y="585" class="meta"></text>
     </svg>
