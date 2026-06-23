@@ -12,7 +12,7 @@ jobs:
 update-stats:
 runs-on: ubuntu-latest
 
-
+```
 steps:
   - name: Checkout profile repo
     uses: actions/checkout@v5
@@ -148,7 +148,7 @@ steps:
           except json.JSONDecodeError:
               return {}
 
-      def render_svg(title, items, value_label, value_formatter, footer, output_path):
+      def render_svg(title, items, value_formatter, footer, output_path):
           if not items:
               raise SystemExit(f"No data found for {title}")
 
@@ -179,7 +179,6 @@ steps:
             <style>
               .bg {{ fill: #0d1117; }}
               .title {{ fill: #f0f6fc; font: 700 24px system-ui, -apple-system, Segoe UI, sans-serif; }}
-              .axis {{ fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .label {{ fill: #c9d1d9; font: 600 14px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .value {{ fill: #f0f6fc; font: 600 13px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .bar {{ fill: #58a6ff; }}
@@ -268,7 +267,6 @@ steps:
       render_svg(
           title="Languages by Lines of Code",
           items=lines_items,
-          value_label="Lines",
           value_formatter=lambda value: f"{human_number(value)} lines",
           footer="Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.",
           output_path="stats/languages-by-lines.svg",
@@ -277,7 +275,6 @@ steps:
       render_svg(
           title="Languages by Repository Count",
           items=repos_items,
-          value_label="Repositories",
           value_formatter=lambda value: f"{human_number(value)} repos" if value != 1 else "1 repo",
           footer="Metric: number of included repositories where each language appears.",
           output_path="stats/languages-by-repos.svg",
