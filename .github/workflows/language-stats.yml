@@ -270,7 +270,7 @@ jobs:
               title="Languages by Lines of Code",
               items=lines_items,
               value_formatter=lambda value: f"{human_number(value)} lines",
-              footer="Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.",
+              footer="",
               output_path="stats/languages-by-lines.svg",
           )
 
@@ -278,7 +278,7 @@ jobs:
               title="Languages by Repository Count",
               items=repos_items,
               value_formatter=lambda value: f"{human_number(value)} repos" if value != 1 else "1 repo",
-              footer="Metric: number of included repositories where each language appears.",
+              footer="",
               output_path="stats/languages-by-repos.svg",
           )
 
