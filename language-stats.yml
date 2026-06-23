@@ -1,0 +1,27 @@
+name: Update Language Statistics
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 0"
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout profile repo
+        uses: actions/checkout@v4
+
+      - name: GitHub Profile Language Analytics
+        uses: StefVuck/Github-Language-Stats@v1.2.0
+        with:
+          github_token: ${{ secrets.STATS_TOKEN }}
+          visualization_types: "leaderboard bar pie donut"
+          output_path: "stats"
+          exclude_languages: "HTML,CSS,Markdown"
+          dark_mode: "true"
+          use_loc: "true"
