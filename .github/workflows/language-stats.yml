@@ -1,203 +1,312 @@
 name: Update Language Statistics
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 12 * * 0"
+workflow_dispatch:
+schedule:
+- cron: "0 12 * * 0"
 
 permissions:
-  contents: write
+contents: write
 
 jobs:
-  update-stats:
-    runs-on: ubuntu-latest
+update-stats:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout profile repo
-        uses: actions/checkout@v5
+```
+steps:
+  - name: Checkout profile repo
+    uses: actions/checkout@v5
 
-      - name: Generate language stats
-        env:
-          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
-        run: |
-          python3 <<'PY'
-          import os
-          import json
-          import math
-          import html
-          import urllib.request
-          import urllib.parse
-          from pathlib import Path
+  - name: Install cloc
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y cloc
 
-          TOKEN = os.environ.get("STATS_TOKEN")
-          if not TOKEN:
-              raise SystemExit("STATS_TOKEN is missing")
+  - name: Generate language stats
+    env:
+      STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
+    run: |
+      python3 <<'PY'
+      import os
+      import json
+      import html
+      import shutil
+      import tempfile
+      import subprocess
+      import urllib.request
+      import urllib.parse
+      from pathlib import Path
 
-          # Only include repos owned by these accounts.
-          # This prevents unrelated org/collaborator repos from polluting your public profile stats.
-          INCLUDED_OWNERS = {"yahm0", "Terminal-Software"}
+      TOKEN = os.environ.get("STATS_TOKEN")
+      if not TOKEN:
+          raise SystemExit("STATS_TOKEN is missing")
 
-          EXCLUDED_REPOS = {
-              "yahm0/yahm0",
-          }
+      INCLUDED_OWNERS = {"yahm0", "Terminal-Software"}
 
-          EXCLUDED_LANGUAGES = {
-              "HTML",
-              "CSS",
-              "Markdown",
-          }
+      EXCLUDED_REPOS = {
+          "yahm0/yahm0",
+      }
 
-          HEADERS = {
-              "Authorization": f"Bearer {TOKEN}",
-              "Accept": "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-              "User-Agent": "yahm0-profile-language-stats",
-          }
+      EXCLUDED_LANGUAGES = {
+          "HTML",
+          "CSS",
+          "Markdown",
+      }
 
-          def github_get(url):
-              req = urllib.request.Request(url, headers=HEADERS)
-              with urllib.request.urlopen(req) as response:
-                  data = response.read().decode("utf-8")
-                  return json.loads(data), response.headers
+      EXCLUDED_DIRS = [
+          ".git",
+          "node_modules",
+          "dist",
+          "build",
+          "Build",
+          "Builds",
+          "bin",
+          "obj",
+          "Library",
+          "Temp",
+          "Logs",
+          ".vs",
+          ".vscode",
+          ".idea",
+      ]
 
-          def list_repos():
-              repos = []
-              page = 1
+      HEADERS = {
+          "Authorization": f"Bearer {TOKEN}",
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "yahm0-profile-language-stats",
+      }
 
-              while True:
-                  query = urllib.parse.urlencode({
-                      "visibility": "all",
-                      "affiliation": "owner,collaborator,organization_member",
-                      "per_page": 100,
-                      "page": page,
-                      "sort": "full_name",
-                  })
+      def github_get(url):
+          req = urllib.request.Request(url, headers=HEADERS)
+          with urllib.request.urlopen(req) as response:
+              data = response.read().decode("utf-8")
+              return json.loads(data), response.headers
 
-                  url = f"https://api.github.com/user/repos?{query}"
-                  data, headers = github_get(url)
+      def list_repos():
+          repos = []
+          page = 1
 
-                  if not data:
-                      break
+          while True:
+              query = urllib.parse.urlencode({
+                  "visibility": "all",
+                  "affiliation": "owner,collaborator,organization_member",
+                  "per_page": 100,
+                  "page": page,
+                  "sort": "full_name",
+              })
 
-                  repos.extend(data)
-                  page += 1
-
-              return repos
-
-          def repo_languages(full_name):
-              url = f"https://api.github.com/repos/{full_name}/languages"
+              url = f"https://api.github.com/user/repos?{query}"
               data, _ = github_get(url)
-              return data
 
-          repos = list_repos()
+              if not data:
+                  break
 
-          filtered_repos = []
-          for repo in repos:
-              full_name = repo["full_name"]
-              owner = repo["owner"]["login"]
+              repos.extend(data)
+              page += 1
 
-              if owner not in INCLUDED_OWNERS:
-                  continue
+          return repos
 
-              if full_name in EXCLUDED_REPOS:
-                  continue
+      def human_number(n):
+          return f"{n:,}"
 
-              if repo.get("fork"):
-                  continue
+      def clone_repo(full_name, destination):
+          clone_url = f"https://x-access-token:{TOKEN}@github.com/{full_name}.git"
 
-              if repo.get("archived"):
-                  continue
+          result = subprocess.run(
+              ["git", "clone", "--depth", "1", "--quiet", clone_url, str(destination)],
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              text=True,
+          )
 
-              filtered_repos.append(repo)
+          if result.returncode != 0:
+              print(f"Skipping {full_name}: clone failed")
+              return False
 
-          totals = {}
-          repos_seen_by_language = {}
+          return True
 
-          for repo in filtered_repos:
-              full_name = repo["full_name"]
-              languages = repo_languages(full_name)
+      def run_cloc(repo_path):
+          result = subprocess.run(
+              [
+                  "cloc",
+                  "--json",
+                  "--quiet",
+                  f"--exclude-dir={','.join(EXCLUDED_DIRS)}",
+                  str(repo_path),
+              ],
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              text=True,
+          )
 
-              for language, byte_count in languages.items():
-                  if language in EXCLUDED_LANGUAGES:
-                      continue
+          if result.returncode != 0:
+              return {}
 
-                  totals[language] = totals.get(language, 0) + byte_count
-                  repos_seen_by_language.setdefault(language, set()).add(full_name)
+          try:
+              return json.loads(result.stdout)
+          except json.JSONDecodeError:
+              return {}
 
-          if not totals:
-              raise SystemExit("No language data found")
-
-          sorted_languages = sorted(totals.items(), key=lambda item: item[1], reverse=True)
-          top_languages = sorted_languages[:12]
-          max_bytes = top_languages[0][1]
-
-          def human_bytes(n):
-              for unit in ["B", "KB", "MB", "GB"]:
-                  if n < 1024:
-                      return f"{n:.1f} {unit}" if unit != "B" else f"{n} B"
-                  n /= 1024
-              return f"{n:.1f} TB"
+      def render_svg(title, items, value_label, value_formatter, footer, output_path):
+          if not items:
+              raise SystemExit(f"No data found for {title}")
 
           width = 900
           row_height = 42
-          top_padding = 70
+          top_padding = 54
           bottom_padding = 45
           chart_left = 180
-          chart_width = 560
-          height = top_padding + len(top_languages) * row_height + bottom_padding
+          chart_width = 520
+          height = top_padding + len(items) * row_height + bottom_padding
+          max_value = items[0][1]
 
           rows = []
-          for index, (language, byte_count) in enumerate(top_languages):
+          total_value = sum(value for _, value in items)
+
+          for index, (language, value) in enumerate(items):
               y = top_padding + index * row_height
-              bar_width = max(4, int((byte_count / max_bytes) * chart_width))
-              percent = byte_count / sum(totals.values()) * 100
-              repo_count = len(repos_seen_by_language.get(language, []))
+              bar_width = max(4, int((value / max_value) * chart_width))
+              percent = value / total_value * 100 if total_value else 0
 
               rows.append(f'''
               <text x="30" y="{y + 22}" class="label">{html.escape(language)}</text>
               <rect x="{chart_left}" y="{y}" width="{bar_width}" height="26" rx="5" class="bar"/>
-              <text x="{chart_left + bar_width + 12}" y="{y + 19}" class="value">{percent:.1f}% · {human_bytes(byte_count)} · {repo_count} repos</text>
+              <text x="{chart_left + bar_width + 12}" y="{y + 19}" class="value">{value_formatter(value)} · {percent:.1f}%</text>
               ''')
 
-          svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub language statistics">
+          svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{html.escape(title)}">
             <style>
               .bg {{ fill: #0d1117; }}
               .title {{ fill: #f0f6fc; font: 700 24px system-ui, -apple-system, Segoe UI, sans-serif; }}
-              .subtitle {{ fill: #8b949e; font: 400 13px system-ui, -apple-system, Segoe UI, sans-serif; }}
+              .axis {{ fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .label {{ fill: #c9d1d9; font: 600 14px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .value {{ fill: #f0f6fc; font: 600 13px system-ui, -apple-system, Segoe UI, sans-serif; }}
               .bar {{ fill: #58a6ff; }}
               .meta {{ fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }}
             </style>
             <rect width="100%" height="100%" rx="12" class="bg"/>
-            <text x="30" y="34" class="title">GitHub Language Stats</text>
-            <text x="30" y="55" class="subtitle">Includes yahm0 and Terminal-Software repositories accessible to STATS_TOKEN</text>
+            <text x="30" y="34" class="title">{html.escape(title)}</text>
             {''.join(rows)}
-            <text x="30" y="{height - 18}" class="meta">Metric: GitHub Linguist byte totals by language, excluding HTML, CSS, and Markdown.</text>
+            <text x="30" y="{height - 18}" class="meta">{html.escape(footer)}</text>
           </svg>'''
 
-          Path("stats").mkdir(exist_ok=True)
-          Path("stats/languages.svg").write_text(svg, encoding="utf-8")
+          Path(output_path).write_text(svg, encoding="utf-8")
 
-          print(f"Included repositories: {len(filtered_repos)}")
+      repos = list_repos()
+
+      filtered_repos = []
+      for repo in repos:
+          full_name = repo["full_name"]
+          owner = repo["owner"]["login"]
+
+          if owner not in INCLUDED_OWNERS:
+              continue
+
+          if full_name in EXCLUDED_REPOS:
+              continue
+
+          if repo.get("fork"):
+              continue
+
+          if repo.get("archived"):
+              continue
+
+          filtered_repos.append(repo)
+
+      line_totals = {}
+      repos_seen_by_language = {}
+
+      temp_root = Path(tempfile.mkdtemp(prefix="language-stats-"))
+
+      try:
           for repo in filtered_repos:
-              print(f"- {repo['full_name']}")
+              full_name = repo["full_name"]
+              safe_name = full_name.replace("/", "__")
+              repo_path = temp_root / safe_name
 
-          print("Language totals:")
-          for language, byte_count in sorted_languages:
-              print(f"- {language}: {byte_count}")
-          PY
+              print(f"Scanning {full_name}")
 
-      - name: Commit generated stats
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              if not clone_repo(full_name, repo_path):
+                  continue
 
-          git add stats/languages.svg
+              cloc_data = run_cloc(repo_path)
 
-          if git diff --cached --quiet; then
-            echo "No language stat changes to commit."
-          else
-            git commit -m "Update language statistics"
-            git push
-          fi
+              for language, stats in cloc_data.items():
+                  if language == "header" or language == "SUM":
+                      continue
+
+                  if language in EXCLUDED_LANGUAGES:
+                      continue
+
+                  code_lines = int(stats.get("code", 0))
+                  if code_lines <= 0:
+                      continue
+
+                  line_totals[language] = line_totals.get(language, 0) + code_lines
+                  repos_seen_by_language.setdefault(language, set()).add(full_name)
+
+      finally:
+          shutil.rmtree(temp_root, ignore_errors=True)
+
+      if not line_totals:
+          raise SystemExit("No language data found")
+
+      lines_items = sorted(line_totals.items(), key=lambda item: item[1], reverse=True)[:12]
+      repos_items = sorted(
+          ((language, len(repo_set)) for language, repo_set in repos_seen_by_language.items()),
+          key=lambda item: (item[1], line_totals.get(item[0], 0)),
+          reverse=True,
+      )[:12]
+
+      Path("stats").mkdir(exist_ok=True)
+
+      old_svg = Path("stats/languages.svg")
+      if old_svg.exists():
+          old_svg.unlink()
+
+      render_svg(
+          title="Languages by Lines of Code",
+          items=lines_items,
+          value_label="Lines",
+          value_formatter=lambda value: f"{human_number(value)} lines",
+          footer="Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.",
+          output_path="stats/languages-by-lines.svg",
+      )
+
+      render_svg(
+          title="Languages by Repository Count",
+          items=repos_items,
+          value_label="Repositories",
+          value_formatter=lambda value: f"{human_number(value)} repos" if value != 1 else "1 repo",
+          footer="Metric: number of included repositories where each language appears.",
+          output_path="stats/languages-by-repos.svg",
+      )
+
+      print(f"Included repositories: {len(filtered_repos)}")
+      for repo in filtered_repos:
+          print(f"- {repo['full_name']}")
+
+      print("Line totals:")
+      for language, lines in lines_items:
+          print(f"- {language}: {lines}")
+
+      print("Repository counts:")
+      for language, count in repos_items:
+          print(f"- {language}: {count}")
+      PY
+
+  - name: Commit generated stats
+    run: |
+      git config user.name "github-actions[bot]"
+      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      git add -A stats
+
+      if git diff --cached --quiet; then
+        echo "No language stat changes to commit."
+      else
+        git commit -m "Update language statistics"
+        git push
+      fi
+```
