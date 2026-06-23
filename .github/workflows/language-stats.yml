@@ -12,7 +12,7 @@ jobs:
 update-stats:
 runs-on: ubuntu-latest
 
-```
+
 steps:
   - name: Checkout profile repo
     uses: actions/checkout@v5
