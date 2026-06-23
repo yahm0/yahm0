@@ -6,7 +6,7 @@
 
 💞️ I’m looking to collaborate on innovative cloud infrastructure solutions, machine learning engineering projects, data center optimization, open-source tooling, web applications, and video game development.
 
-📫 How to reach me: LinkedIn: https://www.linkedin.com/in/adam-nuccio/ or email me at stnt190@outlook.com
+📫 How to reach me: LinkedIn: https://www.linkedin.com/in/adam-nuccio/ or email me at adam@adamnuccio.com
 
 <!---
 yahm0/yahm0 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
