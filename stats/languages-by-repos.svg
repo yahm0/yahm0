@@ -1,0 +1,62 @@
+<svg width="900" height="603" viewBox="0 0 900 603" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Languages by Repository Count">
+      <style>
+        .bg { fill: #0d1117; }
+        .title { fill: #f0f6fc; font: 700 24px system-ui, -apple-system, Segoe UI, sans-serif; }
+        .label { fill: #c9d1d9; font: 600 14px system-ui, -apple-system, Segoe UI, sans-serif; }
+        .value { fill: #f0f6fc; font: 600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+        .bar { fill: #58a6ff; }
+        .meta { fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }
+      </style>
+      <rect width="100%" height="100%" rx="12" class="bg"/>
+      <text x="30" y="34" class="title">Languages by Repository Count</text>
+      
+        <text x="30" y="76" class="label">JavaScript</text>
+        <rect x="180" y="54" width="520" height="26" rx="5" class="bar"/>
+        <text x="712" y="73" class="value">23 repos · 26.1%</text>
+        
+        <text x="30" y="118" class="label">JSON</text>
+        <rect x="180" y="96" width="497" height="26" rx="5" class="bar"/>
+        <text x="689" y="115" class="value">22 repos · 25.0%</text>
+        
+        <text x="30" y="160" class="label">YAML</text>
+        <rect x="180" y="138" width="158" height="26" rx="5" class="bar"/>
+        <text x="350" y="157" class="value">7 repos · 8.0%</text>
+        
+        <text x="30" y="202" class="label">JSX</text>
+        <rect x="180" y="180" width="135" height="26" rx="5" class="bar"/>
+        <text x="327" y="199" class="value">6 repos · 6.8%</text>
+        
+        <text x="30" y="244" class="label">Text</text>
+        <rect x="180" y="222" width="135" height="26" rx="5" class="bar"/>
+        <text x="327" y="241" class="value">6 repos · 6.8%</text>
+        
+        <text x="30" y="286" class="label">Bourne Shell</text>
+        <rect x="180" y="264" width="90" height="26" rx="5" class="bar"/>
+        <text x="282" y="283" class="value">4 repos · 4.5%</text>
+        
+        <text x="30" y="328" class="label">SQL</text>
+        <rect x="180" y="306" width="90" height="26" rx="5" class="bar"/>
+        <text x="282" y="325" class="value">4 repos · 4.5%</text>
+        
+        <text x="30" y="370" class="label">TOML</text>
+        <rect x="180" y="348" width="90" height="26" rx="5" class="bar"/>
+        <text x="282" y="367" class="value">4 repos · 4.5%</text>
+        
+        <text x="30" y="412" class="label">TypeScript</text>
+        <rect x="180" y="390" width="67" height="26" rx="5" class="bar"/>
+        <text x="259" y="409" class="value">3 repos · 3.4%</text>
+        
+        <text x="30" y="454" class="label">Python</text>
+        <rect x="180" y="432" width="67" height="26" rx="5" class="bar"/>
+        <text x="259" y="451" class="value">3 repos · 3.4%</text>
+        
+        <text x="30" y="496" class="label">Handlebars</text>
+        <rect x="180" y="474" width="67" height="26" rx="5" class="bar"/>
+        <text x="259" y="493" class="value">3 repos · 3.4%</text>
+        
+        <text x="30" y="538" class="label">make</text>
+        <rect x="180" y="516" width="67" height="26" rx="5" class="bar"/>
+        <text x="259" y="535" class="value">3 repos · 3.4%</text>
+        
+      <text x="30" y="585" class="meta">Metric: number of included repositories where each language appears.</text>
+    </svg>
