@@ -15,7 +15,14 @@ I’m looking to collaborate on:
 
 ## 📊 GitHub Language Stats
 
-![GitHub Language Stats](./stats/languages.svg)
+### Languages by Lines of Code
+
+![Languages by Lines of Code](./stats/languages-by-lines.svg)
+
+### Languages by Repository Count
+
+![Languages by Repository Count](./stats/languages-by-repos.svg)
+
 ## 📫 Contact
 
 * LinkedIn: [linkedin.com/in/adam-nuccio](https://www.linkedin.com/in/adam-nuccio/)
