@@ -43,14 +43,14 @@ jobs:
           INCLUDED_OWNERS = {"yahm0", "Terminal-Software"}
           EXCLUDED_REPOS = {"yahm0/yahm0"}
           EXCLUDED_LANGUAGES = {
-    "Markdown",
-    "Unity-Prefab",
-    "JSON",
-    "YAML",
-    "XML",
-    "TOML",
-    "Text",
-}
+              "Markdown",
+              "Unity-Prefab",
+              "JSON",
+              "YAML",
+              "XML",
+              "TOML",
+              "Text",
+          }
 
           EXCLUDED_DIRS = [
               ".git",
