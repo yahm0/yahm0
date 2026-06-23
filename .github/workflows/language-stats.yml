@@ -16,6 +16,17 @@ jobs:
       - name: Checkout profile repo
         uses: actions/checkout@v5
 
+      - name: Verify STATS_TOKEN exists
+        env:
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
+        run: |
+          if [ -z "$STATS_TOKEN" ]; then
+            echo "STATS_TOKEN is missing or empty"
+            exit 1
+          else
+            echo "STATS_TOKEN is set"
+          fi
+
       - name: GitHub Profile Language Analytics
         uses: StefVuck/Github-Language-Stats@v1.2.0
         with:
