@@ -1,308 +1,302 @@
-Copy **only the content inside this editable block** into `.github/workflows/language-stats.yml`. The first line in the GitHub file should be `name: Update Language Statistics`. There should be **no backtick lines** anywhere.
-
 name: Update Language Statistics
 
 on:
-workflow_dispatch:
-schedule:
-- cron: "0 12 * * 0"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * 0"
 
 permissions:
-contents: write
+  contents: write
 
 jobs:
-update-stats:
-runs-on: ubuntu-latest
+  update-stats:
+    runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Checkout profile repo
-    uses: actions/checkout@v5
+    steps:
+      - name: Checkout profile repo
+        uses: actions/checkout@v6
 
-  - name: Install cloc
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y cloc
+      - name: Install cloc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cloc
 
-  - name: Generate language stats
-    env:
-      STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
-    run: |
-      python3 <<'PY'
-      import os
-      import json
-      import html
-      import shutil
-      import tempfile
-      import subprocess
-      import urllib.request
-      import urllib.parse
-      from pathlib import Path
+      - name: Generate language stats
+        env:
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
+        run: |
+          python3 <<'PY'
+          import os
+          import json
+          import html
+          import shutil
+          import tempfile
+          import subprocess
+          import urllib.request
+          import urllib.parse
+          from pathlib import Path
 
-      TOKEN = os.environ.get("STATS_TOKEN")
-      if not TOKEN:
-          raise SystemExit("STATS_TOKEN is missing")
+          TOKEN = os.environ.get("STATS_TOKEN")
+          if not TOKEN:
+              raise SystemExit("STATS_TOKEN is missing")
 
-      INCLUDED_OWNERS = {"yahm0", "Terminal-Software"}
-      EXCLUDED_REPOS = {"yahm0/yahm0"}
-      EXCLUDED_LANGUAGES = {"HTML", "CSS", "Markdown"}
+          INCLUDED_OWNERS = {"yahm0", "Terminal-Software"}
+          EXCLUDED_REPOS = {"yahm0/yahm0"}
+          EXCLUDED_LANGUAGES = {"HTML", "CSS", "Markdown"}
 
-      EXCLUDED_DIRS = [
-          ".git",
-          "node_modules",
-          "dist",
-          "build",
-          "Build",
-          "Builds",
-          "bin",
-          "obj",
-          "Library",
-          "Temp",
-          "Logs",
-          ".vs",
-          ".vscode",
-          ".idea",
-      ]
+          EXCLUDED_DIRS = [
+              ".git",
+              "node_modules",
+              "dist",
+              "build",
+              "Build",
+              "Builds",
+              "bin",
+              "obj",
+              "Library",
+              "Temp",
+              "Logs",
+              ".vs",
+              ".vscode",
+              ".idea",
+          ]
 
-      HEADERS = {
-          "Authorization": f"Bearer {TOKEN}",
-          "Accept": "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "User-Agent": "yahm0-profile-language-stats",
-      }
+          HEADERS = {
+              "Authorization": f"Bearer {TOKEN}",
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "yahm0-profile-language-stats",
+          }
 
-      def github_get(url):
-          req = urllib.request.Request(url, headers=HEADERS)
-          with urllib.request.urlopen(req) as response:
-              data = response.read().decode("utf-8")
-              return json.loads(data)
+          def github_get(url):
+              req = urllib.request.Request(url, headers=HEADERS)
+              with urllib.request.urlopen(req) as response:
+                  data = response.read().decode("utf-8")
+                  return json.loads(data)
 
-      def list_repos():
-          repos = []
-          page = 1
+          def list_repos():
+              repos = []
+              page = 1
 
-          while True:
-              query = urllib.parse.urlencode({
-                  "visibility": "all",
-                  "affiliation": "owner,collaborator,organization_member",
-                  "per_page": 100,
-                  "page": page,
-                  "sort": "full_name",
-              })
+              while True:
+                  query = urllib.parse.urlencode({
+                      "visibility": "all",
+                      "affiliation": "owner,collaborator,organization_member",
+                      "per_page": 100,
+                      "page": page,
+                      "sort": "full_name",
+                  })
 
-              url = f"https://api.github.com/user/repos?{query}"
-              data = github_get(url)
+                  url = f"https://api.github.com/user/repos?{query}"
+                  data = github_get(url)
 
-              if not data:
-                  break
+                  if not data:
+                      break
 
-              repos.extend(data)
-              page += 1
+                  repos.extend(data)
+                  page += 1
 
-          return repos
+              return repos
 
-      def human_number(n):
-          return f"{n:,}"
+          def human_number(n):
+              return f"{n:,}"
 
-      def clone_repo(full_name, destination):
-          clone_url = f"https://x-access-token:{TOKEN}@github.com/{full_name}.git"
+          def clone_repo(full_name, destination):
+              clone_url = f"https://x-access-token:{TOKEN}@github.com/{full_name}.git"
 
-          result = subprocess.run(
-              ["git", "clone", "--depth", "1", "--quiet", clone_url, str(destination)],
-              stdout=subprocess.PIPE,
-              stderr=subprocess.PIPE,
-              text=True,
-          )
+              result = subprocess.run(
+                  ["git", "clone", "--depth", "1", "--quiet", clone_url, str(destination)],
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+                  text=True,
+              )
 
-          if result.returncode != 0:
-              print(f"Skipping {full_name}: clone failed")
-              return False
+              if result.returncode != 0:
+                  print(f"Skipping {full_name}: clone failed")
+                  return False
 
-          return True
+              return True
 
-      def run_cloc(repo_path):
-          result = subprocess.run(
-              [
-                  "cloc",
-                  "--json",
-                  "--quiet",
-                  f"--exclude-dir={','.join(EXCLUDED_DIRS)}",
-                  str(repo_path),
-              ],
-              stdout=subprocess.PIPE,
-              stderr=subprocess.PIPE,
-              text=True,
-          )
+          def run_cloc(repo_path):
+              result = subprocess.run(
+                  [
+                      "cloc",
+                      "--json",
+                      "--quiet",
+                      f"--exclude-dir={','.join(EXCLUDED_DIRS)}",
+                      str(repo_path),
+                  ],
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE,
+                  text=True,
+              )
 
-          if result.returncode != 0:
-              print(f"cloc failed for {repo_path}")
-              return {}
+              if result.returncode != 0:
+                  print(f"cloc failed for {repo_path}")
+                  return {}
 
-          try:
-              return json.loads(result.stdout)
-          except json.JSONDecodeError:
-              return {}
+              try:
+                  return json.loads(result.stdout)
+              except json.JSONDecodeError:
+                  return {}
 
-      def render_svg(title, items, value_formatter, footer, output_path):
-          if not items:
-              raise SystemExit(f"No data found for {title}")
+          def render_svg(title, items, value_formatter, footer, output_path):
+              if not items:
+                  raise SystemExit(f"No data found for {title}")
 
-          width = 900
-          row_height = 42
-          top_padding = 54
-          bottom_padding = 45
-          chart_left = 180
-          chart_width = 520
-          height = top_padding + len(items) * row_height + bottom_padding
-          max_value = items[0][1]
-          total_value = sum(value for _, value in items)
+              width = 900
+              row_height = 42
+              top_padding = 54
+              bottom_padding = 45
+              chart_left = 180
+              chart_width = 520
+              height = top_padding + len(items) * row_height + bottom_padding
+              max_value = items[0][1]
+              total_value = sum(value for _, value in items)
+              rows = []
 
-          rows = []
+              for index, (language, value) in enumerate(items):
+                  y = top_padding + index * row_height
+                  bar_width = max(4, int((value / max_value) * chart_width))
+                  percent = value / total_value * 100 if total_value else 0
 
-          for index, (language, value) in enumerate(items):
-              y = top_padding + index * row_height
-              bar_width = max(4, int((value / max_value) * chart_width))
-              percent = value / total_value * 100 if total_value else 0
+                  rows.append(f'''
+                  <text x="30" y="{y + 22}" class="label">{html.escape(language)}</text>
+                  <rect x="{chart_left}" y="{y}" width="{bar_width}" height="26" rx="5" class="bar"/>
+                  <text x="{chart_left + bar_width + 12}" y="{y + 19}" class="value">{value_formatter(value)} · {percent:.1f}%</text>
+                  ''')
 
-              rows.append(f'''
-              <text x="30" y="{y + 22}" class="label">{html.escape(language)}</text>
-              <rect x="{chart_left}" y="{y}" width="{bar_width}" height="26" rx="5" class="bar"/>
-              <text x="{chart_left + bar_width + 12}" y="{y + 19}" class="value">{value_formatter(value)} · {percent:.1f}%</text>
-              ''')
+              svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{html.escape(title)}">
+                <style>
+                  .bg {{ fill: #0d1117; }}
+                  .title {{ fill: #f0f6fc; font: 700 24px system-ui, -apple-system, Segoe UI, sans-serif; }}
+                  .label {{ fill: #c9d1d9; font: 600 14px system-ui, -apple-system, Segoe UI, sans-serif; }}
+                  .value {{ fill: #f0f6fc; font: 600 13px system-ui, -apple-system, Segoe UI, sans-serif; }}
+                  .bar {{ fill: #58a6ff; }}
+                  .meta {{ fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }}
+                </style>
+                <rect width="100%" height="100%" rx="12" class="bg"/>
+                <text x="30" y="34" class="title">{html.escape(title)}</text>
+                {''.join(rows)}
+                <text x="30" y="{height - 18}" class="meta">{html.escape(footer)}</text>
+              </svg>'''
 
-          svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{html.escape(title)}">
-            <style>
-              .bg {{ fill: #0d1117; }}
-              .title {{ fill: #f0f6fc; font: 700 24px system-ui, -apple-system, Segoe UI, sans-serif; }}
-              .label {{ fill: #c9d1d9; font: 600 14px system-ui, -apple-system, Segoe UI, sans-serif; }}
-              .value {{ fill: #f0f6fc; font: 600 13px system-ui, -apple-system, Segoe UI, sans-serif; }}
-              .bar {{ fill: #58a6ff; }}
-              .meta {{ fill: #8b949e; font: 400 12px system-ui, -apple-system, Segoe UI, sans-serif; }}
-            </style>
-            <rect width="100%" height="100%" rx="12" class="bg"/>
-            <text x="30" y="34" class="title">{html.escape(title)}</text>
-            {''.join(rows)}
-            <text x="30" y="{height - 18}" class="meta">{html.escape(footer)}</text>
-          </svg>'''
+              Path(output_path).write_text(svg, encoding="utf-8")
 
-          Path(output_path).write_text(svg, encoding="utf-8")
+          repos = list_repos()
 
-      repos = list_repos()
-
-      filtered_repos = []
-      for repo in repos:
-          full_name = repo["full_name"]
-          owner = repo["owner"]["login"]
-
-          if owner not in INCLUDED_OWNERS:
-              continue
-
-          if full_name in EXCLUDED_REPOS:
-              continue
-
-          if repo.get("fork"):
-              continue
-
-          if repo.get("archived"):
-              continue
-
-          filtered_repos.append(repo)
-
-      line_totals = {}
-      repos_seen_by_language = {}
-
-      temp_root = Path(tempfile.mkdtemp(prefix="language-stats-"))
-
-      try:
-          for repo in filtered_repos:
+          filtered_repos = []
+          for repo in repos:
               full_name = repo["full_name"]
-              repo_path = temp_root / full_name.replace("/", "__")
+              owner = repo["owner"]["login"]
 
-              print(f"Scanning {full_name}")
-
-              if not clone_repo(full_name, repo_path):
+              if owner not in INCLUDED_OWNERS:
                   continue
 
-              cloc_data = run_cloc(repo_path)
+              if full_name in EXCLUDED_REPOS:
+                  continue
 
-              for language, stats in cloc_data.items():
-                  if language in {"header", "SUM"}:
+              if repo.get("fork"):
+                  continue
+
+              if repo.get("archived"):
+                  continue
+
+              filtered_repos.append(repo)
+
+          line_totals = {}
+          repos_seen_by_language = {}
+          temp_root = Path(tempfile.mkdtemp(prefix="language-stats-"))
+
+          try:
+              for repo in filtered_repos:
+                  full_name = repo["full_name"]
+                  repo_path = temp_root / full_name.replace("/", "__")
+
+                  print(f"Scanning {full_name}")
+
+                  if not clone_repo(full_name, repo_path):
                       continue
 
-                  if language in EXCLUDED_LANGUAGES:
-                      continue
+                  cloc_data = run_cloc(repo_path)
 
-                  code_lines = int(stats.get("code", 0))
-                  if code_lines <= 0:
-                      continue
+                  for language, stats in cloc_data.items():
+                      if language in {"header", "SUM"}:
+                          continue
 
-                  line_totals[language] = line_totals.get(language, 0) + code_lines
-                  repos_seen_by_language.setdefault(language, set()).add(full_name)
+                      if language in EXCLUDED_LANGUAGES:
+                          continue
 
-      finally:
-          shutil.rmtree(temp_root, ignore_errors=True)
+                      code_lines = int(stats.get("code", 0))
+                      if code_lines <= 0:
+                          continue
 
-      if not line_totals:
-          raise SystemExit("No language data found")
+                      line_totals[language] = line_totals.get(language, 0) + code_lines
+                      repos_seen_by_language.setdefault(language, set()).add(full_name)
 
-      lines_items = sorted(
-          line_totals.items(),
-          key=lambda item: item[1],
-          reverse=True,
-      )[:12]
+          finally:
+              shutil.rmtree(temp_root, ignore_errors=True)
 
-      repos_items = sorted(
-          ((language, len(repo_set)) for language, repo_set in repos_seen_by_language.items()),
-          key=lambda item: (item[1], line_totals.get(item[0], 0)),
-          reverse=True,
-      )[:12]
+          if not line_totals:
+              raise SystemExit("No language data found")
 
-      Path("stats").mkdir(exist_ok=True)
+          lines_items = sorted(
+              line_totals.items(),
+              key=lambda item: item[1],
+              reverse=True,
+          )[:12]
 
-      old_svg = Path("stats/languages.svg")
-      if old_svg.exists():
-          old_svg.unlink()
+          repos_items = sorted(
+              ((language, len(repo_set)) for language, repo_set in repos_seen_by_language.items()),
+              key=lambda item: (item[1], line_totals.get(item[0], 0)),
+              reverse=True,
+          )[:12]
 
-      render_svg(
-          title="Languages by Lines of Code",
-          items=lines_items,
-          value_formatter=lambda value: f"{human_number(value)} lines",
-          footer="Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.",
-          output_path="stats/languages-by-lines.svg",
-      )
+          Path("stats").mkdir(exist_ok=True)
 
-      render_svg(
-          title="Languages by Repository Count",
-          items=repos_items,
-          value_formatter=lambda value: f"{human_number(value)} repos" if value != 1 else "1 repo",
-          footer="Metric: number of included repositories where each language appears.",
-          output_path="stats/languages-by-repos.svg",
-      )
+          old_svg = Path("stats/languages.svg")
+          if old_svg.exists():
+              old_svg.unlink()
 
-      print(f"Included repositories: {len(filtered_repos)}")
-      for repo in filtered_repos:
-          print(f"- {repo['full_name']}")
+          render_svg(
+              title="Languages by Lines of Code",
+              items=lines_items,
+              value_formatter=lambda value: f"{human_number(value)} lines",
+              footer="Metric: cloc code-line totals. Excludes HTML, CSS, Markdown, generated folders, and dependency folders.",
+              output_path="stats/languages-by-lines.svg",
+          )
 
-      print("Line totals:")
-      for language, lines in lines_items:
-          print(f"- {language}: {lines}")
+          render_svg(
+              title="Languages by Repository Count",
+              items=repos_items,
+              value_formatter=lambda value: f"{human_number(value)} repos" if value != 1 else "1 repo",
+              footer="Metric: number of included repositories where each language appears.",
+              output_path="stats/languages-by-repos.svg",
+          )
 
-      print("Repository counts:")
-      for language, count in repos_items:
-          print(f"- {language}: {count}")
-      PY
+          print(f"Included repositories: {len(filtered_repos)}")
+          for repo in filtered_repos:
+              print(f"- {repo['full_name']}")
 
-  - name: Commit generated stats
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          print("Line totals:")
+          for language, lines in lines_items:
+              print(f"- {language}: {lines}")
 
-      git add -A stats
+          print("Repository counts:")
+          for language, count in repos_items:
+              print(f"- {language}: {count}")
+          PY
 
-      if git diff --cached --quiet; then
-        echo "No language stat changes to commit."
-      else
-        git commit -m "Update language statistics"
-        git push
-      fi
-```
+      - name: Commit generated stats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A stats
+
+          if git diff --cached --quiet; then
+            echo "No language stat changes to commit."
+          else
+            git commit -m "Update language statistics"
+            git push
+          fi
