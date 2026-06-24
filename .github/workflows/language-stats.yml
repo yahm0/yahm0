@@ -51,7 +51,7 @@ jobs:
               "TOML",
               "Text",
               "make",
-              "handlebars",
+              "Handlebars",
           }
 
           EXCLUDED_DIRS = [
