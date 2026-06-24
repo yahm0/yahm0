@@ -50,6 +50,8 @@ jobs:
               "XML",
               "TOML",
               "Text",
+              "make",
+              "handlebars",
           }
 
           EXCLUDED_DIRS = [
