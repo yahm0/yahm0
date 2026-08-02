@@ -12,31 +12,31 @@
       
         <text x="30" y="76" class="label">CSS</text>
         <rect x="180" y="54" width="520" height="26" rx="5" class="bar"/>
-        <text x="712" y="73" class="value">48,037 lines · 30.5%</text>
+        <text x="712" y="73" class="value">48,061 lines · 29.9%</text>
         
         <text x="30" y="118" class="label">JavaScript</text>
-        <rect x="180" y="96" width="473" height="26" rx="5" class="bar"/>
-        <text x="665" y="115" class="value">43,733 lines · 27.7%</text>
+        <rect x="180" y="96" width="476" height="26" rx="5" class="bar"/>
+        <text x="668" y="115" class="value">44,001 lines · 27.4%</text>
         
         <text x="30" y="160" class="label">C#</text>
-        <rect x="180" y="138" width="231" height="26" rx="5" class="bar"/>
-        <text x="423" y="157" class="value">21,417 lines · 13.6%</text>
+        <rect x="180" y="138" width="235" height="26" rx="5" class="bar"/>
+        <text x="427" y="157" class="value">21,777 lines · 13.6%</text>
         
         <text x="30" y="202" class="label">TypeScript</text>
-        <rect x="180" y="180" width="150" height="26" rx="5" class="bar"/>
-        <text x="342" y="199" class="value">13,916 lines · 8.8%</text>
+        <rect x="180" y="180" width="173" height="26" rx="5" class="bar"/>
+        <text x="365" y="199" class="value">16,052 lines · 10.0%</text>
         
         <text x="30" y="244" class="label">HTML</text>
         <rect x="180" y="222" width="123" height="26" rx="5" class="bar"/>
-        <text x="315" y="241" class="value">11,419 lines · 7.2%</text>
+        <text x="315" y="241" class="value">11,419 lines · 7.1%</text>
         
         <text x="30" y="286" class="label">Python</text>
         <rect x="180" y="264" width="75" height="26" rx="5" class="bar"/>
-        <text x="267" y="283" class="value">6,942 lines · 4.4%</text>
+        <text x="267" y="283" class="value">6,942 lines · 4.3%</text>
         
         <text x="30" y="328" class="label">HLSL</text>
         <rect x="180" y="306" width="73" height="26" rx="5" class="bar"/>
-        <text x="265" y="325" class="value">6,818 lines · 4.3%</text>
+        <text x="265" y="325" class="value">6,818 lines · 4.2%</text>
         
         <text x="30" y="370" class="label">HCL</text>
         <rect x="180" y="348" width="26" height="26" rx="5" class="bar"/>
@@ -44,7 +44,7 @@
         
         <text x="30" y="412" class="label">TeX</text>
         <rect x="180" y="390" width="12" height="26" rx="5" class="bar"/>
-        <text x="204" y="409" class="value">1,183 lines · 0.8%</text>
+        <text x="204" y="409" class="value">1,183 lines · 0.7%</text>
         
         <text x="30" y="454" class="label">Bourne Shell</text>
         <rect x="180" y="432" width="8" height="26" rx="5" class="bar"/>
@@ -52,7 +52,7 @@
         
         <text x="30" y="496" class="label">SQL</text>
         <rect x="180" y="474" width="6" height="26" rx="5" class="bar"/>
-        <text x="198" y="493" class="value">555 lines · 0.4%</text>
+        <text x="198" y="493" class="value">555 lines · 0.3%</text>
         
         <text x="30" y="538" class="label">Julia</text>
         <rect x="180" y="516" width="5" height="26" rx="5" class="bar"/>
